@@ -1,0 +1,3 @@
+[submodule "ethz_Probabilistic_AI"]
+	path = ethz_Probabilistic_AI
+	url = https://github.com/angelgldh/ethz_Probabilistic_AI.git
