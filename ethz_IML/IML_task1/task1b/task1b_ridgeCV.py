@@ -1,12 +1,16 @@
-# This serves as a template which will guide you through the implementation of this task.  It is advised
-# to first read the whole template and get a sense of the overall structure of the code before trying to fill in any of the TODO gaps
-# First, we import necessary libraries:
+# %%
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import KFold
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LassoCV
+from sklearn.linear_model import RidgeCV
 
-
+# %%
 def transform_data(X):
     """
     This function transforms the 5 input features of matrix X (x_i denoting the i-th component of X) 
@@ -26,12 +30,21 @@ def transform_data(X):
     X_transformed: array of floats: dim = (700,21), transformed input with 21 features
     """
     X_transformed = np.zeros((700, 21))
-    # TODO: Enter your code here
+    
+    X_linear = X
+    X_squared = np.square(X)
+    X_exp = np.exp(X)
+    X_cos = np.cos(X)
+    X_constant = np.ones(shape = (X.shape[0],1))
+
+    X_transformed = np.concatenate([X_linear, X_squared, X_exp, X_cos,X_constant], axis=1)
+
     assert X_transformed.shape == (700, 21)
     return X_transformed
 
 
-def fit(X, y):
+# %%
+def fit(X, y, method):
     """
     This function receives training data points, transform them, and then fits the linear regression on this 
     transformed data. Finally, it outputs the weights of the fitted linear regression. 
@@ -47,11 +60,57 @@ def fit(X, y):
     """
     w = np.zeros((21,))
     X_transformed = transform_data(X)
-    # TODO: Enter your code here
+    # method = "lm"
+
+    if method == "lm":
+        model = LinearRegression()
+        
+    elif method == "Ridge":
+        model = Ridge(alpha=0.1)
+        
+    elif method == "Lasso":
+        model = Lasso(alpha=0.1)
+        
+    elif method == "RidgeCV":
+        model = RidgeCV(cv=10, alphas= np.linspace(0,10, 100), fit_intercept=False )
+        
+    elif method == "LassoCV":
+        model = LassoCV(cv=10, alphas= np.linspace(0,10, 100), fit_intercept=False )
+        
+    model.fit(X_transformed,y)
+    w = model.coef_
+
+    print(f"{method}. (training) RMSE: {calculate_RMSE(w, X_transformed, y)}")
+
     assert w.shape == (21,)
     return w
 
 
+# %%
+def calculate_RMSE(w, X, y):
+    """This function takes test data points (X and y), and computes the empirical RMSE of 
+    predicting y from X using a linear model with weights w. 
+
+    Parameters
+    ----------
+    w: array of floats: dim = (13,), optimal parameters of ridge regression 
+    X: matrix of floats, dim = (15,13), inputs with 13 features
+    y: array of floats, dim = (15,), input labels
+
+    Returns
+    ----------
+    RMSE: float: dim = 1, RMSE value
+    """
+    RMSE = 0
+    n, p = X.shape
+    
+    y_pred = X @ w
+    RMSE = np.sqrt((1/n)*np.sum((y - y_pred)**2) )
+
+    assert np.isscalar(RMSE)
+    return RMSE
+
+# %%
 # Main function. You don't have to change this
 if __name__ == "__main__":
     # Data loading
@@ -63,6 +122,8 @@ if __name__ == "__main__":
 
     X = data.to_numpy()
     # The function retrieving optimal LR parameters
-    w = fit(X, y)
+    w = fit(X, y, method = "RidgeCV")
     # Save results in the required format
     np.savetxt("./results.csv", w, fmt="%.12f")
+
+
