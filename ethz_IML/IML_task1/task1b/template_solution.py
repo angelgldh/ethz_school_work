@@ -3,6 +3,8 @@
 # First, we import necessary libraries:
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 
 
 def transform_data(X):
