@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
     X = data.to_numpy()
     # The function retrieving optimal LR parameters
-    w = fit(X, y, method = "RidgeCV")
+    w = fit(X, y, method = "bagging")
     # Save results in the required format
     np.savetxt("./results.csv", w, fmt="%.12f")
 
